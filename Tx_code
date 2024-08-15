@@ -1,0 +1,36 @@
+#include <SoftwareSerial.h>
+#include <DHT.h>
+float setPin = 4;
+float DHTPin = 7; // Connect DHT11 data pin to digital pin 2
+DHT dht(DHTPin, DHT11);
+SoftwareSerial HC12(3, 2); // HC-12 TX Pin, HC-12 RX Pin
+float pinNH3 = A0; // Analog pin for NH3
+float pinNO2 = A1; // Analog pin for NO2
+float pinCO = A2; // Analog pin for CO
+float pinAQ = A3; // Analog pin for AQ
+void setup() {
+Serial.begin(9600); // Open serial port to computer
+HC12.begin(9600); // Open serial port to HC12
+pinMode(setPin, OUTPUT);
+digitalWrite(setPin, LOW);
+delay(250);
+digitalWrite(setPin, HIGH); // HC-12 normal, transparent mode
+dht.begin();
+}
+void loop() {
+float humidity = dht.readHumidity();
+float temperature = dht.readTemperature();
+float nh3Value = analogRead(pinNH3);
+float no2Value = analogRead(pinNO2);
+float coValue = analogRead(pinCO);
+float aq = analogRead(pinAQ);
+// Convert analog values to gas concentrations (you may need to calibrate these values)
+float nh3Concentration = map(nh3Value, 0, 1023, 0, 100); // Adjust the mapping
+based on your sensor's characteristics
+float no2Concentration = map(no2Value, 0, 1023, 0, 10); // Adjust the mapping
+based on your sensor's characteristics
+float coConcentration = map(coValue, 0, 1023, 0, 1000);
+String data = String(temperature, 1)+","+ String(humidity, 1) + "," +String(nh3Concentration, 1)+","+String(no2Concentration, 1)+","+String(coConcentration, 1)+","+String(aq, 1) ;
+HC12.println(data); // Transmit sensor data over HC-12
+delay(1000); // Wait for 5 seconds before sending again
+}
